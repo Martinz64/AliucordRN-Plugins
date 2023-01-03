@@ -35,9 +35,12 @@ export default class ConfirmCall extends Plugin {
 
     public async start() {
         const UserProfileHeader = this.getByName("UserProfileHeader");
+        const UserProfileActions = this.getByName("UserProfileActions");
+        //const UserProfileHeader = this.getByName("UserProfileActions");
+
         const Button = this.getByName("Button").default;
 
-
+        //user profile actions (before profile themes thing)
         after(UserProfileHeader, "default", (ctx, component) => {
             const { props } = component;
             const { children } = props
@@ -76,6 +79,44 @@ export default class ConfirmCall extends Plugin {
             }
             ctx.result = [component]
         });
+
+        after(UserProfileActions, "default", (ctx,component) => {
+            //component.props.children.props.children[1].props.children
+            console.log(component)
+            let buttons = component.props?.children?.props?.children[1]?.props?.children
+            if(buttons){
+                console.log(buttons);
+                for (let i = 0; i < buttons.length; i++) {
+                    if(buttons[i]){
+                        this.patcher.after(buttons[i], "type", (ctx: any, component: any) => {
+                            const callFunction = component.props.onPress
+
+                            if(!component.props.patched){
+                                if(component.props.accessibilityHint == Locale.Messages["START_VOICE_CALL"]){
+                                    component.props.onPress = () =>{
+                                        this.yesNoPrompt(this.CALL_PROMPT,callFunction, ()=>{})
+                                    }
+                                    component.props.patched = true
+                                }
+                                if(component.props.accessibilityHint == Locale.Messages["START_VIDEO_CALL"]){
+                                    component.props.onPress = () =>{
+                                        this.yesNoPrompt(this.VIDEO_CALL_PROMPT,callFunction, ()=>{})
+                                    }
+                                    component.props.patched = true
+                                }
+                                if(component.props.accessibilityHint == Locale.Messages["ADD_FRIEND_BUTTON"]){
+                                    component.props.onPress = () =>{
+                                        this.yesNoPrompt(this.FRIEND_REQ_PROMPT,callFunction, ()=>{})
+                                    }
+                                    component.props.patched = true
+                                }
+                            }
+                        })
+                    }
+                }
+            }
+            
+        })
 
         //Add the confirm dialog to the top bar in DMs
         const HeaderSegment = this.getByName("HeaderSegment");
