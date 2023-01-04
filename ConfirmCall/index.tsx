@@ -1,8 +1,11 @@
 import { Plugin } from 'aliucord/entities';
 // @ts-ignore
-import { getModule, Toasts, React, ReactNative, Dialog, Locale } from 'aliucord/metro';
-import { getAssetId } from 'aliucord/utils/getAssetId';
+import { getModule, getByProps, Toasts, React, ReactNative, Dialog, Locale, FormRow } from 'aliucord/metro';
+import { getAssetId } from 'aliucord/utils';
 import { after } from "aliucord/utils/patcher";
+
+const LazyActionSheet = getByProps("openLazy", "hideActionSheet");
+
 
 type FilterOptions = {
     exports?: boolean;
@@ -82,10 +85,10 @@ export default class ConfirmCall extends Plugin {
 
         after(UserProfileActions, "default", (ctx,component) => {
             //component.props.children.props.children[1].props.children
-            console.log(component)
+            //console.log(component)
             let buttons = component.props?.children?.props?.children[1]?.props?.children
             if(buttons){
-                console.log(buttons);
+                //console.log(buttons);
                 for (let i = 0; i < buttons.length; i++) {
                     if(buttons[i]){
                         this.patcher.after(buttons[i], "type", (ctx: any, component: any) => {
@@ -156,6 +159,48 @@ export default class ConfirmCall extends Plugin {
                                 })
                             })
                         })
+                    })
+                })
+            }
+        })
+
+        this.patcher.before(LazyActionSheet, "openLazy", (ctx) => {
+            const [component, sheet] = ctx.args;
+            if (sheet == "CallTap"){
+                component.then(instance => {
+                    this.patcher.after(instance, "default", (ctx,component: any)=>{
+                        const callSheet = component
+                        const callItems = callSheet.props?.children[callSheet.props.children.length - 1]?.props?.children;
+                        if(callItems){
+                            callItems.forEach(item => {
+                                this.patcher.after(item,"type",(ctx,component:any) => {
+                                    //console.log(component)//.props.leading.props.source)
+                                    //console.log(component.props?.children?.props?.children[0]?.props?.children?.props?.source)
+                                    const iconId = component.props?.children?.props?.children[0]?.props?.children?.props?.source
+                                    
+                                    const originalFunction = component.props.onPress
+                                    if(!component.props.patched){
+                                        if(iconId == getAssetId("nav_header_connect")){
+                                            if(component.props.onPress){
+                                                component.props.onPress = () => {
+                                                    this.yesNoPrompt(this.CALL_PROMPT,originalFunction, ()=>{})
+                                                }
+                                                component.props.patched = true
+                                            }
+                                        }
+                                        if(iconId == getAssetId("video")){
+                                            if(component.props.onPress){
+                                                component.props.onPress = () => {
+                                                    this.yesNoPrompt(this.VIDEO_CALL_PROMPT,originalFunction, ()=>{})
+                                                }
+                                                component.props.patched = true
+                                            }
+                                        }
+                                    }
+                                })
+
+                            });
+                        }
                     })
                 })
             }
