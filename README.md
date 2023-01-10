@@ -1,18 +1,7 @@
-# Plugin Template for AliucordRN
+# Plugins for AliucordRN
 
-This template uses typescript and the pnpm package manager
+## [ConfirmCall](https://github.com/Martinz64/AliucordRN-Plugins/raw/builds/ConfirmCall.zip)
+Asks for confirmation when starting a voice/video call and sending a friend request
 
-Make a copy of this template, clone it and run `pnpm install`
-
-## Building plugins
-
-Build Plugin:
-```sh
-pnpm build TokenLogger
-```
-
-Watch for changes and auto compile & deploy* :
-```sh
-pnpm watch TokenLogger
-```
-\* Requires adb installed and to be connected to your phone
+## [EmojiFix](https://github.com/Martinz64/AliucordRN-Plugins/raw/builds/EmojiFix.zip)
+Makes emoji urls look like real emoji
