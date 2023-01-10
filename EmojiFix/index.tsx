@@ -12,7 +12,7 @@ type FilterOptions = {
     default?: true;
 };
 
-export default class EmojiFixTest extends Plugin {
+export default class EmojiFix extends Plugin {
     private getByName(defaultName: string, options?: FilterOptions) {
         return getModule(m => m?.default?.name === defaultName, options);
     }
@@ -78,12 +78,12 @@ export default class EmojiFixTest extends Plugin {
                         */
                         let messageHasText = false
                         const regex = /https?:\/\/(:?cdn\.)?discord.*\.com\/emojis\/([0-9]+).(webp|png|gif)/
-                        console.log("CONTENT",msg.message.content)
+                        //console.log("CONTENT",msg.message.content)
                         if(msg.message.content){
                             for (let j = 0; j < msg.message.content.length; j++) {
                                 messageHasText = true
                                 let node = msg.message.content[j];
-                                console.log("NODE",node)
+                                //console.log("NODE",node)
                                 if(node.type == "link"){
                                     const linkAddress = node.target
                                     if(regex.exec(linkAddress)?.length){ //url is an emoji url
@@ -110,7 +110,7 @@ export default class EmojiFixTest extends Plugin {
                                     if(embed.type == 'image'){
                                         const regex = /https?:\/\/(:?cdn\.)?discord.*\.com\/emojis\/([0-9]+).(webp|png|gif)/
                                         if(embed.url){
-                                            console.log(embed.url)
+                                            //console.log(embed.url)
                                             let matches:any = regex.exec(embed.url)
                                             let [_, __, id, format] = matches
                                             msg.message.content.push({
