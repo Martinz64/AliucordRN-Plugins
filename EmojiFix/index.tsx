@@ -80,7 +80,6 @@ export default class EmojiFix extends Plugin {
                         const regex = /https?:\/\/(:?cdn\.)?discord.*\.com\/emojis\/([0-9]+).(webp|png|gif)/
                         //console.log("CONTENT",msg.message.content)
                         if(msg.message.content){
-                            msg.message.animateEmoji = true;
                             for (let j = 0; j < msg.message.content.length; j++) {
                                 messageHasText = true
                                 let node = msg.message.content[j];
@@ -91,6 +90,10 @@ export default class EmojiFix extends Plugin {
                                         let matches:any = regex.exec(linkAddress)
                                         let [_, __, id, format] = matches
                                         
+                                        if(format == "gif" ){
+                                            msg.message.animateEmoji = true;
+                                        }
+
                                         //this code should not exist
                                         node.type = 'customEmoji'
                                         node.id = id
@@ -114,14 +117,26 @@ export default class EmojiFix extends Plugin {
                                             //console.log(embed.url)
                                             let matches:any = regex.exec(embed.url)
                                             let [_, __, id, format] = matches
-                                            msg.message.content.push({
-                                                id: id,
-                                                alt: 'unknown',
-                                                src: 'https://cdn.discordapp.com/emojis/'+id+'.'+format+'?size=160',
-                                                frozenSrc: 'https://cdn.discordapp.com/emojis/'+id+'.webp?size=160',
-                                                jumboable: true,
-                                                type: 'customEmoji'
-                                            })
+                                            if(format == "gif"){
+                                                msg.message.animateEmoji = true;
+                                                msg.message.content.push({
+                                                    id: id,
+                                                    alt: 'unknown',
+                                                    src: 'https://cdn.discordapp.com/emojis/'+id+'.'+format+'?size=160',
+                                                    frozenSrc: 'https://cdn.discordapp.com/emojis/'+id+'.webp?size=160',
+                                                    jumboable: true,
+                                                    type: 'customEmoji'
+                                                })
+                                            } else {
+                                                msg.message.content.push({
+                                                    id: id,
+                                                    alt: 'unknown',
+                                                    src: 'https://cdn.discordapp.com/emojis/'+id+'.'+format,
+                                                    frozenSrc: 'https://cdn.discordapp.com/emojis/'+id+'.'+format,
+                                                    jumboable: true,
+                                                    type: 'customEmoji'
+                                                })
+                                            }
                                         }
                                     }
                                 }
