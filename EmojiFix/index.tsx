@@ -80,6 +80,7 @@ export default class EmojiFix extends Plugin {
                         const regex = /https?:\/\/(:?cdn\.)?discord.*\.com\/emojis\/([0-9]+).(webp|png|gif)/
                         //console.log("CONTENT",msg.message.content)
                         if(msg.message.content){
+                            msg.message.animateEmoji = true;
                             for (let j = 0; j < msg.message.content.length; j++) {
                                 messageHasText = true
                                 let node = msg.message.content[j];
@@ -93,8 +94,8 @@ export default class EmojiFix extends Plugin {
                                         //this code should not exist
                                         node.type = 'customEmoji'
                                         node.id = id
-                                        node.src = 'https://cdn.discordapp.com/emojis/'+id+'.'+format
-                                        node.frozenSrc = 'https://cdn.discordapp.com/emojis/'+id+'.'+format
+                                        node.src = 'https://cdn.discordapp.com/emojis/'+id+'.'+format+'?size=160'
+                                        node.frozenSrc = 'https://cdn.discordapp.com/emojis/'+id+'.webp?size=160'
                                         node.alt = "unknown"
                                     }
                                 }
@@ -116,8 +117,8 @@ export default class EmojiFix extends Plugin {
                                             msg.message.content.push({
                                                 id: id,
                                                 alt: 'unknown',
-                                                src: 'https://cdn.discordapp.com/emojis/'+id+'.'+format,
-                                                frozenSrc: 'https://cdn.discordapp.com/emojis/'+id+'.'+format,
+                                                src: 'https://cdn.discordapp.com/emojis/'+id+'.'+format+'?size=160',
+                                                frozenSrc: 'https://cdn.discordapp.com/emojis/'+id+'.webp?size=160',
                                                 jumboable: true,
                                                 type: 'customEmoji'
                                             })
@@ -145,6 +146,7 @@ export default class EmojiFix extends Plugin {
                 newMessages.push(msg)
                 //console.log(msg)
             }
+            //console.log(newMessages)
             ctx.args[1] = JSON.stringify(newMessages)
 
         })
