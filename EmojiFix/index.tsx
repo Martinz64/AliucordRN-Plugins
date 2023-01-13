@@ -16,18 +16,8 @@ export default class EmojiFix extends Plugin {
     private getByName(defaultName: string, options?: FilterOptions) {
         return getModule(m => m?.default?.name === defaultName, options);
     }
-
-   
-
     public async start() {
-        const UserProfileHeader = this.getByName("UserProfileHeader");
-        const Button = this.getByName("Button").default;
-
-
-        after(UserProfileHeader, "default", (ctx, component) => {
-            
-            ctx.result = [component]
-        });
+        const EMOJI_REGEX = /https?:\/\/.*\/emojis\/([0-9]+).(webp|png|gif)\?.*/
         const chatManager = ReactNative.NativeModules.DCDChatManager
         this.patcher.before(chatManager, "updateRows", (ctx) => {
             //console.log("OWO",ctx.args)
@@ -36,49 +26,9 @@ export default class EmojiFix extends Plugin {
             let newMessages: any = []
             for (let i = 0; i < messages.length; i++) {
                 let msg = messages[i];
-                //console.log(msg)
                 try{
                     if(msg.type == 1){
-                        //msg.message.username = msg.message.username + " 🤑"+i
-                        
-
-                        /*
-
-                        if(embeds){
-                            for (let j = 0; j < embeds.length; j++) {
-                                const embed = embeds[j];
-                                if(embed.type == 'image'){
-                                    const regex = /https?:\/\/(:?cdn\.)?discord.*\.com\/emojis\/([0-9]+).(webp|png|gif)/
-                                    if(embed.url){
-                                        console.log(embed.url)
-                                        let matches:any = regex.exec(embed.url)
-                                        let [_, __, id, format] = matches
-                                        msg.message.content.push({
-                                            id: id,
-                                            alt: 'unknown',
-                                            src: 'https://cdn.discordapp.com/emojis/'+id+'.'+format,
-                                            frozenSrc: 'https://cdn.discordapp.com/emojis/'+id+'.'+format,
-                                            jumboable: true,
-                                            type: 'customEmoji'
-                                        })
-                                    }
-                                }
-                            }
-                            for (let j = 0; j < embeds.length; j++) {
-                                const regex = /https?:\/\/(:?cdn\.)?discord.*\.com\/emojis\/([0-9]+).(webp|png|gif)/
-                                if(embeds[j].url){
-                                    if(regex.exec(embeds[j].url)?.length){
-                                        //delete embeds[j]
-                                    }
-                                }
-                            }
-                            
-                        }
-
-                        */
                         let messageHasText = false
-                        const regex = /https?:\/\/(:?cdn\.)?discord.*\.com\/emojis\/([0-9]+).(webp|png|gif)/
-                        //console.log("CONTENT",msg.message.content)
                         if(msg.message.content){
                             for (let j = 0; j < msg.message.content.length; j++) {
                                 messageHasText = true
@@ -86,9 +36,9 @@ export default class EmojiFix extends Plugin {
                                 //console.log("NODE",node)
                                 if(node.type == "link"){
                                     const linkAddress = node.target
-                                    if(regex.exec(linkAddress)?.length){ //url is an emoji url
-                                        let matches:any = regex.exec(linkAddress)
-                                        let [_, __, id, format] = matches
+                                    if(EMOJI_REGEX.exec(linkAddress)?.length){ //url is an emoji url
+                                        let matches:any = EMOJI_REGEX.exec(linkAddress)
+                                        let [_, id, format] = matches
                                         
                                         if(format == "gif" ){
                                             msg.message.animateEmoji = true;
@@ -98,7 +48,10 @@ export default class EmojiFix extends Plugin {
                                         node.type = 'customEmoji'
                                         node.id = id
                                         node.src = 'https://cdn.discordapp.com/emojis/'+id+'.'+format+'?size=160'
-                                        node.frozenSrc = 'https://cdn.discordapp.com/emojis/'+id+'.webp?size=160'
+                                        node.frozenSrc = 'https://cdn.discordapp.com/emojis/'+id+'.'+format+'?size=160'
+                                        if(format =="gif"){
+                                            node.frozenSrc = 'https://cdn.discordapp.com/emojis/'+id+'.webp?size=160'
+                                        }
                                         node.alt = "unknown"
                                     }
                                 }
@@ -112,11 +65,10 @@ export default class EmojiFix extends Plugin {
                                 for (let j = 0; j < embeds.length; j++) {
                                     const embed = embeds[j];
                                     if(embed.type == 'image'){
-                                        const regex = /https?:\/\/(:?cdn\.)?discord.*\.com\/emojis\/([0-9]+).(webp|png|gif)/
                                         if(embed.url){
                                             //console.log(embed.url)
-                                            let matches:any = regex.exec(embed.url)
-                                            let [_, __, id, format] = matches
+                                            let matches:any = EMOJI_REGEX.exec(embed.url)
+                                            let [_, id, format] = matches
                                             if(format == "gif"){
                                                 msg.message.animateEmoji = true;
                                                 msg.message.content.push({
@@ -141,16 +93,17 @@ export default class EmojiFix extends Plugin {
                                     }
                                 }
                             }
-
-                            for (let j = 0; j < embeds.length; j++) {
-                                const regex = /https?:\/\/(:?cdn\.)?discord.*\.com\/emojis\/([0-9]+).(webp|png|gif)/
-                                if(embeds[j].url){
-                                    if(regex.exec(embeds[j].url)?.length){
-                                        //delete embeds[j]
-                                        embeds.splice(j,1)
+                            
+                            let finalEmbeds = embeds.slice(0);
+                            embeds.forEach(embed=>{
+                                if(embed.url){
+                                    if(EMOJI_REGEX.exec(embed.url)?.length){
+                                        const embedIndex = finalEmbeds.findIndex(e => e.url == embed.url)
+                                        finalEmbeds.splice(embedIndex,1)
                                     }
                                 }
-                            }
+                            })
+                            msg.message.embeds = finalEmbeds
 
                         }
 
@@ -159,7 +112,6 @@ export default class EmojiFix extends Plugin {
                     }
                 } catch(e){}
                 newMessages.push(msg)
-                //console.log(msg)
             }
             //console.log(newMessages)
             ctx.args[1] = JSON.stringify(newMessages)
