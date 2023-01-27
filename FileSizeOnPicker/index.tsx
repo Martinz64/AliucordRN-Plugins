@@ -26,17 +26,24 @@ export default class FileSizeOnPicker extends Plugin {
 
         this.patcher.after(getByProps("VirtualizedListCellContextProvider"),"VirtualizedListCellContextProvider",(ctx,component:any)=>{
             //console.log("VirtualizedListCellContextProvider",component)
+            //window.upload1=component
             if(component.props?.children?.props?.children[0]?.type){
                 this.patcher.after(component.props.children.props.children[0].type,"type",(ctx,component:any)=>{
                     //console.log("VirtualizedListCellContextProvider.TYPE",component)
                     //window.upload3=component
+
+                    //fix lag on emoji picker
+                    if(component.props?.onPress?.name == "onCategoryPress") return; 
+
                     component.props?.children?.forEach(child => {
                         if(child.type)this.patcher.after(child,"type",(ctx,component: any) => {
                             if(!component.props?.patched){
                                 //window.upload4=component
                                 const imageInfo = component.props?.children[0]?.props?.source
+                                console.log(imageInfo.uri)
                                 if(imageInfo && component.props.children){
                                     if(imageInfo.uri){
+                                        console.log(imageInfo.uri)
                                         component.props.children.push(
                                             <View style={{
                                                 position: 'absolute',
