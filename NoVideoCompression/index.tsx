@@ -1,6 +1,6 @@
 import { Plugin } from 'aliucord/entities';
 // @ts-ignore
-import { getAll } from 'aliucord/metro';
+import { getAll, getByProps, Locale } from 'aliucord/metro';
 export default class NoVideoCompression extends Plugin {
     public async start() {
         // there has to be a better way to do this
@@ -20,5 +20,15 @@ export default class NoVideoCompression extends Plugin {
             }
             return false
         })
+        this.patcher.before(getByProps("createUploadProgressEmbed"),"createUploadProgressEmbed",(ctx)=>{
+            const embeds = ctx.args[0]
+            embeds.forEach(embed => {
+                if(embed.name == Locale.Messages["ATTACHMENT_COMPRESSING"]){
+                    embed.name = Locale.Messages["ATTACHMENT_PROCESSING_SERVER"]
+                }
+            });
+        })
+
+
     }
 }
