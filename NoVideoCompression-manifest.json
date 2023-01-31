@@ -1,0 +1,1 @@
+{"authors":[{"id":"307215253811363843","name":"MSMA"}],"license":"MIT","version":"0.1","description":"Disables the video compression that discord does before uploading an image/video (file size limit still applies)","name":"NoVideoCompression"}
