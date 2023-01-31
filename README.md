@@ -15,3 +15,7 @@ Makes emoji urls look like real emoji
 ## [QuickDownload](https://github.com/Martinz64/AliucordRN-Plugins/raw/builds/QuickDownload.zip)
 Lets you download attachments from the message long press menu
 ![QuickDownload](images/QuickDownload.png)
+
+## [NoVideoCompression](https://github.com/Martinz64/AliucordRN-Plugins/raw/builds/NoVideoCompression.zip)
+Prevents Discord from compressing images/videos when uploading them (file size limit still applies)
+![NoVideoCompression](images/NoVideoCompression.png)
