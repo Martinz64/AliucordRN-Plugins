@@ -4,6 +4,11 @@
 >
 > AliucordRN is still in beta,therefore any of these plugins could break anytime and they have to be manually installed
 
+> **Warning**
+>
+> I use Discord version 162.8 (162108) for testing so i can't guarantee them working on newer Discord versions
+
+
 ## [ConfirmCall](https://github.com/Martinz64/AliucordRN-Plugins/raw/builds/ConfirmCall.zip)
 Asks for confirmation when starting a voice/video call and sending a friend request
 ![](images/ConfirmCall.png)
