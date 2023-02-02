@@ -95,6 +95,13 @@ export default class DMCategories extends Plugin {
             categorySelectionButton:{
                 paddingHorizontal: 16,
                 backgroundColor: Styles.ThemeColorMap.BACKGROUND_SECONDARY,
+            },
+            checkIcon:{
+                color: Styles.ThemeColorMap.TEXT_MUTED,
+                paddingLeft: 0,
+                width: 16,
+                height: 16,
+                marginRight: 4,
             }
         })
 
@@ -249,9 +256,8 @@ export default class DMCategories extends Plugin {
                                 <View style={styles.sheetMargin}>
                                     <View style={styles.sheetInner}>
                                         <FormRow
-                                            label="Add to DM Category"/>
-                                        <FormRow
-                                        label={
+                                            label="Add to DM Category"
+                                            trailing={                                
                                             <View style={styles.categorySelectionButtons}>
                                                 <View style={styles.categorySelectionButtonsItem}>
                                                     <Button
@@ -291,6 +297,10 @@ export default class DMCategories extends Plugin {
                                                                 if(updateDMList)updateDMList()
                                                                 LazyActionSheet.hideActionSheet(sheet);
                                                             }}
+                                                            renderIcon={
+                                                                () => cat.items.includes(channelId) ?
+                                                                <FormRow.Icon source={getAssetId("checked")} style={styles.checkIcon} /> : null
+                                                            }
                                                             //color="secondary"
                                                             />
                                                         </View>)
@@ -307,4 +317,5 @@ export default class DMCategories extends Plugin {
             }
         })
     }
+    
 }
