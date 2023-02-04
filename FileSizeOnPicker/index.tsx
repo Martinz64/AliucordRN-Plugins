@@ -30,7 +30,6 @@ export default class FileSizeOnPicker extends Plugin {
             const firstChild = component.props?.children?.props?.children[0]
             if(firstChild){
                 if(firstChild.type?.type){
-                    console.log("type1")
                     this.patcher.after(firstChild.type,"type",(ctx,component:any)=>{
                         //console.log("VirtualizedListCellContextProvider.TYPE",component)
                         window.upload3=component
@@ -41,7 +40,6 @@ export default class FileSizeOnPicker extends Plugin {
 
                         component.props?.children?.forEach(child => {
                             if(child){
-                                console.log("type2")
                                 this.patcher.after(child,"type",(ctx,component: any) => {
                                     if(!component.props?.patched){
                                         //window.upload4=component
