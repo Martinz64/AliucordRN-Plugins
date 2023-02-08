@@ -6,7 +6,7 @@
 
 > **Warning**
 >
-> I use Discord version 162.8 (162108) for testing so i can't guarantee them working on newer Discord versions
+> All plugins have been compiled for hermes bytecode v89 due to a recent update
 
 
 ## [ConfirmCall](https://github.com/Martinz64/AliucordRN-Plugins/raw/builds/ConfirmCall.zip)
@@ -24,3 +24,6 @@ Lets you download attachments from the message long press menu
 ## [NoVideoCompression](https://github.com/Martinz64/AliucordRN-Plugins/raw/builds/NoVideoCompression.zip)
 Prevents Discord from compressing images/videos when uploading them (file size limit still applies)
 ![NoVideoCompression](images/NoVideoCompression.png)
+
+## [DoubleTapReply](https://github.com/Martinz64/AliucordRN-Plugins/raw/builds/DoubleTapReply.zip)
+Reply to messages by douple tapping them
