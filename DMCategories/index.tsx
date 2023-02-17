@@ -4,6 +4,9 @@ import { getModule, Toasts, React, ReactNative, Dialog, Locale, getByProps, Mess
 import { getAssetId } from 'aliucord/utils';
 import { after } from "aliucord/utils/patcher";
 import { Touchable, TouchableNativeFeedback, TouchableOpacity } from 'react-native';
+import SettingsPage from './settingsPage';
+import getStyles from './styles';
+import { settings } from './utils/Settings';
 
 const {View,Text,Pressable} = ReactNative
 const { FormIcon, FormRow } = Forms
@@ -15,97 +18,34 @@ type FilterOptions = {
     exports?: true;
     default?: true;
 };
-const Button = getByName("Button", { default: false }).default;
+
 
 
 
 export default class DMCategories extends Plugin {
-    private getByName(defaultName: string, options?: FilterOptions) {
+    public getByName(defaultName: string, options?: FilterOptions) {
         return getModule(m => m?.default?.name === defaultName, options);
     }
     
     MARKS = {
-        DMLIST_PATCHED: "DMLIST_PATCHED",
-        DMLIST_SEPARATOR: "DMLIST_SEPARATOR"
+        //DMLIST_PATCHED: "DMLIST_PATCHED",
+        //DMLIST_SEPARATOR: "DMLIST_SEPARATOR"
+        DMLIST_PATCHED: '969292696969695552', //'111',
+        DMLIST_SEPARATOR: '966992969695725566'
     }
     
+    public static instance: DMCategories;
 
     public async start() {
+        DMCategories.instance = this;
+
+        const Button = this.getByName("Button", { default: false }).default;
         let updateDMList;
-        const styles = Styles.createThemedStyleSheet({
-            container:{
-                width: '100%',
-                height: '100%'
-            },
-            //height = 8
-            separator:{
-                width: '100%',
-                //height: 4,
-                height: 2,
-                backgroundColor: Styles.ThemeColorMap.TEXT_MUTED,
-                /*marginTop: 2,
-                marginBottom: 2,*/
-                borderRadius: 2,
 
-            },
-            text:{
-                color: Styles.ThemeColorMap.TEXT_MUTED,
-                paddingLeft: 0,
-            },
-            
-            marginBox:{
-                marginLeft: 16,
-                marginRight: 16,
-                /*marginLeft: 32,
-                marginRight: 32*/
-                marginTop: 2,
-                marginBottom: 2,
-            },
-            icon:{
-                width: 8,
-                height: 8,
-                marginRight: 4,
-            },
-            categoryHeader:{
-                /*marginTop: 2,
-                marginBottom: 2,*/
-                borderRadius: 2,
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-            },
+        let styles = getStyles();
+        
 
-            sheetMargin:{
-                paddingTop: 16,
-                paddingHorizontal: 16,
-            },
-            sheetInner:{
-                backgroundColor: Styles.ThemeColorMap.BACKGROUND_TERTIARY,
-                borderRadius: 4,
-                overflow: "hidden",
-            },
-            categorySelectionButtons:{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-            },
-            categorySelectionButtonsItem:{
-                paddingRight: 8,
-            },
-            categorySelectionButton:{
-                paddingHorizontal: 16,
-                backgroundColor: Styles.ThemeColorMap.BACKGROUND_SECONDARY,
-            },
-            checkIcon:{
-                color: Styles.ThemeColorMap.TEXT_MUTED,
-                paddingLeft: 0,
-                width: 16,
-                height: 16,
-                marginRight: 4,
-            }
-        })
-
-        let categories = [
+        /*let categories = [
             {
                 id: '24892',
                 name: "aaa",
@@ -116,32 +56,59 @@ export default class DMCategories extends Plugin {
                 ],
                 open: true
             }
-        ]
+        ]*/
 
         const ConnectedPrivateChannels = this.getByName("ConnectedPrivateChannels")
         this.patcher.after(ConnectedPrivateChannels,"default",(ctx,component,props)=>{
             const [, forceUpdate] = React.useReducer(x => x = !x, false);
             updateDMList = forceUpdate
 
-            this.patcher.after(component,"type",(ctx,component) => {
-                console.log("ConnectedPrivateChannels",component)
+            let firstRow;
+            let hasMessageRequestOffset = false;
+
+            this.patcher.after(component,"type",(ctx,component: any) => {
+                //console.log("ConnectedPrivateChannels",component)
                 window.cpc = component
 
                 this.patcher.after(component,"renderRow",(ctx) => {
                     //console.log("renderRow",component,ctx.args)
-                    window.sect = component
-                    const index=ctx.args[1]
+                    window.sect = ctx.result
+                    window.secta = ctx.args
+                    let index=ctx.args[1]
+
+                    if(index == 0){
+                        //firstRow = ctx.result
+                        if(ctx.result.type?.name =="MessageRequestRow"){
+                            hasMessageRequestOffset = true;
+                            return ctx.result
+                        }
+                    }
+                    if(hasMessageRequestOffset){
+                        index -=1;
+                    }
+
+                    const categories = settings.getCategories()
 
                     const id = component.props?.privateChannelIds[index]
                     const categoryIndex = categories.findIndex(c => c.id == id)
                     const category = categories[categoryIndex];
-                    console.log(id,category)
+
+                    if(index < 6){
+                        console.log(index,id,ctx.result,ctx.args)
+                    }
+                    
+                    
+                    //console.log(id,category)
                     if(category){
-                        ctx.result = (
+                        /*ctx.result =*/ return (
                             <TouchableNativeFeedback
+                                style={{
+                                    height:32
+                                }}
                                 onPress={()=>{
                                     categories[categoryIndex].open = !categories[categoryIndex].open
                                     forceUpdate();
+                                    settings.setCategories(categories)
                             }}>
                                 <View style={styles.container}>
                                     <View style={styles.marginBox}>
@@ -164,8 +131,8 @@ export default class DMCategories extends Plugin {
                         return null
                     }
                     if(id == this.MARKS.DMLIST_SEPARATOR){
-                        return (
-                            <View style={styles.marginBox}>
+                        /*ctx.result*/ return (
+                            <View style={[styles.marginBox,{height: 8}]}>
                                 <View style={styles.separator}></View>
                             </View>
                         )
@@ -174,8 +141,42 @@ export default class DMCategories extends Plugin {
 
                 this.patcher.after(component,"getRowHeight",(ctx) => {
                     console.log("getRowHeight",ctx.args,ctx.result)
-                    const index=ctx.args[1]
+                    const categories = settings.getCategories()
 
+                    let index=ctx.args[1]
+
+                    //please kill me
+                    if(index == 0 && hasMessageRequestOffset){
+                        //return ctx.result;
+                    }
+                    if(hasMessageRequestOffset){
+                        //index -=1;
+                    }
+
+                    const id = component.props?.privateChannelIds[index]
+                    const category = categories.find(c => c.id == id)
+                    if(category){
+                        //ctx.result = 32
+                        //return 32
+                    }
+                    if(id == this.MARKS.DMLIST_SEPARATOR){
+                        //ctx.result = 8
+                        //return 32
+                    }
+                })
+
+                /*this.patcher.after(component,"getRowHeightWithoutPadding",(ctx) => {
+                    //console.log("getRowHeight",ctx.args,ctx.result)
+                    const categories = settings.getCategories()
+
+                    let index=ctx.args[1]
+                    //please end my misery
+                    if(index == 0 && hasMessageRequestOffset){
+                        return ctx.result;
+                    }
+                    if(hasMessageRequestOffset){
+                        index -=1;
+                    }
                     const id = component.props?.privateChannelIds[index]
                     const category = categories.find(c => c.id == id)
                     if(category){
@@ -184,24 +185,26 @@ export default class DMCategories extends Plugin {
                     if(id == this.MARKS.DMLIST_SEPARATOR){
                         ctx.result = 8
                     }
-                })
+                })*/
 
                 this.patcher.before(component,"render",(ctx:any) => {
                     //console.log("render",ctx.thisObject)
 
-                    const component = ctx.thisObject
+                    //const component = ctx.thisObject
                     const dm_list = component.props.privateChannelIds
                     const selectedChannel = component.props.selectedChannelId
+
+                    const categories = settings.getCategories()
 
                     if(!dm_list.includes(this.MARKS.DMLIST_PATCHED)){
                         let new_dm_list:any = []
                         let in_category:any = []
                         dm_list.forEach((id:any) => {
                             if(!categories.find(c => c.id == id)){
-                                console.log("id: ",id)
+                                //console.log("id: ",id)
                                 categories.forEach((cat:any) => {
                                     if(cat.items.find(i => i==id)){
-                                        console.log("category includes id: ",id)
+                                        //console.log("category includes id: ",id)
                                         //add item to list
                                         //create header if not present
                                         if(!new_dm_list.includes(cat.id)){
@@ -221,6 +224,7 @@ export default class DMCategories extends Plugin {
                         new_dm_list.push(this.MARKS.DMLIST_SEPARATOR)
                         new_dm_list = new_dm_list.concat(dm_list.filter(it => !in_category.includes(it)))
                         new_dm_list.push(this.MARKS.DMLIST_PATCHED)
+                        component.props.oldPrivateChannelIds = component.props.privateChannelIds
                         component.props.privateChannelIds = new_dm_list
                     }
                     
@@ -246,9 +250,12 @@ export default class DMCategories extends Plugin {
                         unpatch1()
                         const unpatch2 = this.patcher.after(component,"type",(_,component:any) => {
                             unpatch2()
-                            window.sheet = component
-                            console.log(component)
-                            console.log(component.props.children[1])
+
+                            const categories = settings.getCategories()
+
+                            //window.sheet = component
+                            //console.log(component)
+                            //console.log(component.props.children[1])
                             const channelId = sheet.split("-")[sheet.split("-").length-1]
                             //component.props.children.push(<View>
                             //component.props.children[1].props.children.props.children.
@@ -266,6 +273,7 @@ export default class DMCategories extends Plugin {
                                                         size="small"
                                                         style={styles.categorySelectionButton}
                                                         onPress={()=>{
+                                                            const categories = settings.getCategories()
                                                             const category = categories.find(cat => cat.items.includes(channelId))
                                                             if(category){
                                                                 const itemIndex = category?.items.indexOf(channelId)
@@ -273,7 +281,12 @@ export default class DMCategories extends Plugin {
                                                             }
                                                             if(updateDMList)updateDMList()
                                                             LazyActionSheet.hideActionSheet(sheet);
+                                                            settings.setCategories(categories)
                                                         }}
+                                                        renderIcon={
+                                                            () => !categories.find(c => c.items.includes(channelId)) ?
+                                                            <FormRow.Icon source={getAssetId("checked")} style={styles.checkIcon} /> : null
+                                                        }
                                                         //color="secondary"
                                                     />
                                                 </View>
@@ -286,6 +299,7 @@ export default class DMCategories extends Plugin {
                                                             size="small"
                                                             style={styles.categorySelectionButton}
                                                             onPress={()=>{
+                                                                const categories = settings.getCategories()
                                                                 const category = categories.find(c => c.items.includes(channelId))
                                                                 if(category){
                                                                     const itemIndex = category?.items.indexOf(channelId)
@@ -296,6 +310,7 @@ export default class DMCategories extends Plugin {
                                                                 categoryToAdd?.items.push(channelId)
                                                                 if(updateDMList)updateDMList()
                                                                 LazyActionSheet.hideActionSheet(sheet);
+                                                                settings.setCategories(categories)
                                                             }}
                                                             renderIcon={
                                                                 () => cat.items.includes(channelId) ?
@@ -316,6 +331,9 @@ export default class DMCategories extends Plugin {
                 })
             }
         })
+    }
+    public getSettingsPage() {
+        return <SettingsPage />;
     }
     
 }
