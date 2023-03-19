@@ -1,5 +1,5 @@
 {
     "name": "NoRipple",
-    "description": "Disable getByProps, React, ripple when scrolling",
+    "description": "Disable ripple when scrolling",
     "version": "0.1"
 }
